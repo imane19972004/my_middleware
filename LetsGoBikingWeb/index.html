@@ -1,0 +1,448 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Let's Go Biking - Planificateur d'itinéraires</title>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			min-height: 100vh;
+			padding: 20px;
+		}
+
+		.container {
+			max-width: 1400px;
+			margin: 0 auto;
+			display: grid;
+			grid-template-columns: 350px 1fr;
+			gap: 20px;
+			height: calc(100vh - 40px);
+		}
+
+		.sidebar {
+			background: white;
+			border-radius: 15px;
+			padding: 25px;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+			overflow-y: auto;
+		}
+
+		.map-container {
+			background: white;
+			border-radius: 15px;
+			overflow: hidden;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+		}
+
+		h1 {
+			color: #667eea;
+			margin-bottom: 20px;
+			font-size: 24px;
+		}
+
+		.input-group {
+			margin-bottom: 15px;
+		}
+
+		label {
+			display: block;
+			margin-bottom: 5px;
+			color: #333;
+			font-weight: 600;
+			font-size: 14px;
+		}
+
+		input[type="text"], input[type="number"] {
+			width: 100%;
+			padding: 12px;
+			border: 2px solid #e0e0e0;
+			border-radius: 8px;
+			font-size: 14px;
+			transition: border-color 0.3s;
+		}
+
+			input[type="text"]:focus, input[type="number"]:focus {
+				outline: none;
+				border-color: #667eea;
+			}
+
+		.btn {
+			width: 100%;
+			padding: 14px;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			border: none;
+			border-radius: 8px;
+			font-size: 16px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: transform 0.2s, box-shadow 0.2s;
+			margin-top: 10px;
+		}
+
+			.btn:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+			}
+
+			.btn:disabled {
+				background: #ccc;
+				cursor: not-allowed;
+				transform: none;
+			}
+
+		/* Section Notifications */
+		.notifications-section {
+			margin-top: 30px;
+			padding-top: 20px;
+			border-top: 2px solid #f0f0f0;
+		}
+
+			.notifications-section h2 {
+				font-size: 18px;
+				color: #333;
+				margin-bottom: 15px;
+			}
+
+		.topic-selector {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			margin-bottom: 15px;
+		}
+
+		.topic-checkbox {
+			display: flex;
+			align-items: center;
+			padding: 10px;
+			background: #f8f9fa;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: background 0.2s;
+		}
+
+			.topic-checkbox:hover {
+				background: #e9ecef;
+			}
+
+			.topic-checkbox input[type="checkbox"] {
+				width: 18px;
+				height: 18px;
+				margin-right: 10px;
+				cursor: pointer;
+			}
+
+			.topic-checkbox label {
+				margin: 0;
+				cursor: pointer;
+				flex: 1;
+			}
+
+		.notifications-container {
+			max-height: 300px;
+			overflow-y: auto;
+			margin-top: 15px;
+		}
+
+		.notification {
+			padding: 12px;
+			margin-bottom: 10px;
+			border-radius: 8px;
+			animation: slideIn 0.3s ease;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+			.notification.green {
+				background: #d4edda;
+				border-left: 4px solid #28a745;
+			}
+
+			.notification.orange {
+				background: #fff3cd;
+				border-left: 4px solid #ffc107;
+			}
+
+			.notification.red {
+				background: #f8d7da;
+				border-left: 4px solid #dc3545;
+			}
+
+		.notification-icon {
+			font-size: 24px;
+		}
+
+		.notification-content {
+			flex: 1;
+		}
+
+		.notification-message {
+			font-size: 14px;
+			color: #333;
+			margin-bottom: 3px;
+		}
+
+		.notification-time {
+			font-size: 11px;
+			color: #666;
+		}
+
+		@keyframes slideIn {
+			from {
+				opacity: 0;
+				transform: translateX(-20px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateX(0);
+			}
+		}
+
+		#map {
+			width: 100%;
+			height: 100%;
+		}
+
+		.loading {
+			text-align: center;
+			padding: 20px;
+			color: #667eea;
+		}
+
+		.status {
+			padding: 10px;
+			margin-top: 10px;
+			border-radius: 8px;
+			font-size: 13px;
+		}
+
+			.status.success {
+				background: #d4edda;
+				color: #155724;
+			}
+
+			.status.error {
+				background: #f8d7da;
+				color: #721c24;
+			}
+
+			.status.info {
+				background: #d1ecf1;
+				color: #0c5460;
+			}
+
+		/* Scrollbar custom */
+		::-webkit-scrollbar {
+			width: 8px;
+		}
+
+		::-webkit-scrollbar-track {
+			background: #f1f1f1;
+			border-radius: 10px;
+		}
+
+		::-webkit-scrollbar-thumb {
+			background: #667eea;
+			border-radius: 10px;
+		}
+
+			::-webkit-scrollbar-thumb:hover {
+				background: #764ba2;
+			}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<!-- Sidebar gauche -->
+		<div class="sidebar">
+			<h1>🚴 Let's Go Biking</h1>
+
+			<!-- Formulaire de recherche -->
+			<div class="input-group">
+				<label for="origin">📍 Origine</label>
+				<input type="text" id="origin" placeholder="Ex: Paris, France">
+			</div>
+
+			<div class="input-group">
+				<label for="destination">🎯 Destination</label>
+				<input type="text" id="destination" placeholder="Ex: Lyon, France">
+			</div>
+
+			<div class="input-group">
+				<label for="minBikes">🚲 Vélos minimum</label>
+				<input type="number" id="minBikes" value="1" min="1">
+			</div>
+
+			<button class="btn" id="searchBtn">Rechercher un itinéraire</button>
+
+			<div id="status"></div>
+
+			<!-- Section Notifications -->
+			<div class="notifications-section">
+				<h2>🔔 Notifications en temps réel</h2>
+
+				<div class="topic-selector">
+					<div class="topic-checkbox">
+						<input type="checkbox" id="weatherTopic" checked>
+						<label for="weatherTopic">🌤️ Alertes météo</label>
+					</div>
+					<div class="topic-checkbox">
+						<input type="checkbox" id="pollutionTopic" checked>
+						<label for="pollutionTopic">🏭 Alertes pollution</label>
+					</div>
+					<div class="topic-checkbox">
+						<input type="checkbox" id="eventTopic" checked>
+						<label for="eventTopic">🎉 Événements</label>
+					</div>
+				</div>
+
+				<button class="btn" id="subscribeBtn">S'abonner aux notifications</button>
+
+				<div id="notifications" class="notifications-container"></div>
+			</div>
+		</div>
+
+		<!-- Carte principale -->
+		<div class="map-container">
+			<div id="map"></div>
+		</div>
+	</div>
+
+	<!-- Bibliothèques -->
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+	<script>
+		// Configuration
+		const CONFIG = {
+			activeMQWebSocketUrl: 'ws://localhost:61614', // Port WebSocket d'ActiveMQ
+			soapServiceUrl: 'http://localhost:8000/LetsGoBikingServer/RoutingService',
+			topics: {
+				weather: 'weather.alerts',
+				pollution: 'pollution.alerts',
+				event: 'event.alerts'
+			}
+		};
+
+		// Initialisation de la carte
+		let map = L.map('map').setView([48.8566, 2.3522], 6); // Centré sur Paris
+
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '© OpenStreetMap contributors'
+		}).addTo(map);
+
+		// Variables globales
+		let stompClient = null;
+		let isConnected = false;
+
+		// Gestion des notifications ActiveMQ
+		document.getElementById('subscribeBtn').addEventListener('click', function () {
+			if (isConnected) {
+				showStatus('Déjà connecté aux notifications !', 'info');
+				return;
+			}
+
+			showStatus('🔌 Connexion en cours...', 'info');
+
+			// Connexion via WebSocket natif (pas SockJS)
+			const socket = new WebSocket(CONFIG.activeMQWebSocketUrl);
+			stompClient = Stomp.over(socket);
+
+			// Désactiver les logs de debug
+			stompClient.debug = function (str) {
+				console.log('STOMP:', str);
+			};
+
+			stompClient.connect('admin', 'admin', function (frame) {
+				isConnected = true;
+				showStatus('✅ Connecté aux notifications !', 'success');
+				console.log('Connected: ' + frame);
+
+				// S'abonner aux topics sélectionnés
+				if (document.getElementById('weatherTopic').checked) {
+					subscribeToTopic(CONFIG.topics.weather);
+				}
+				if (document.getElementById('pollutionTopic').checked) {
+					subscribeToTopic(CONFIG.topics.pollution);
+				}
+				if (document.getElementById('eventTopic').checked) {
+					subscribeToTopic(CONFIG.topics.event);
+				}
+			}, function (error) {
+				showStatus('❌ Erreur de connexion: ' + error, 'error');
+				console.error('Erreur STOMP:', error);
+				isConnected = false;
+			});
+		});
+
+		function subscribeToTopic(topicName) {
+			const subscription = stompClient.subscribe('/topic/' + topicName, function (message) {
+				console.log('Message reçu:', message.body);
+				try {
+					const notification = JSON.parse(message.body);
+					displayNotification(notification);
+				} catch (e) {
+					console.error('Erreur parsing JSON:', e);
+				}
+			});
+			console.log('✅ Abonné au topic: ' + topicName);
+		}
+
+		function displayNotification(notification) {
+			const container = document.getElementById('notifications');
+			const div = document.createElement('div');
+			div.className = `notification ${notification.level}`;
+			div.innerHTML = `
+					<div class="notification-icon">${notification.icon}</div>
+					<div class="notification-content">
+						<div class="notification-message">${notification.message}</div>
+						<div class="notification-time">${notification.timestamp}</div>
+					</div>
+				`;
+			container.insertBefore(div, container.firstChild);
+
+			// Garder seulement les 10 dernières notifications
+			while (container.children.length > 10) {
+				container.removeChild(container.lastChild);
+			}
+		}
+
+		// Gestion de la recherche d'itinéraire
+		document.getElementById('searchBtn').addEventListener('click', function () {
+			const origin = document.getElementById('origin').value;
+			const destination = document.getElementById('destination').value;
+			const minBikes = document.getElementById('minBikes').value;
+
+			if (!origin || !destination) {
+				showStatus('⚠️ Veuillez renseigner origine et destination', 'error');
+				return;
+			}
+
+			showStatus('🔍 Recherche en cours...', 'info');
+
+			// TODO: Appeler votre service SOAP ici
+			// Pour l'instant, simulation
+			setTimeout(() => {
+				showStatus('✅ Itinéraire calculé !', 'success');
+			}, 1000);
+		});
+
+		function showStatus(message, type) {
+			const statusDiv = document.getElementById('status');
+			statusDiv.className = `status ${type}`;
+			statusDiv.textContent = message;
+		}
+	</script>
+</body>
+</html>
