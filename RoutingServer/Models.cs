@@ -55,6 +55,9 @@ namespace RoutingServer
         public string name { get; set; }
 
         [DataMember]
+        public string address { get; set; }  
+
+        [DataMember]
         public Position position { get; set; }
 
         [DataMember]

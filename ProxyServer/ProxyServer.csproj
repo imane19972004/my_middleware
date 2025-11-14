@@ -66,9 +66,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
-    <Compile Include="IJCDService.cs" />
+    <Compile Include="IJCDServices.cs" />
     <Compile Include="IProxyService.cs" />
-    <Compile Include="JCDService.cs" />
     <Compile Include="Models.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -26,7 +26,7 @@ namespace ProxyServer
         [DataMember] public int number { get; set; }
         [DataMember] public string contract_name { get; set; }
         [DataMember] public string name { get; set; }
-        [DataMember] public string address { get; set; }
+        [DataMember] public string address { get; set; }  // ✅ AJOUTÉ
         [DataMember] public Position position { get; set; }
         [DataMember] public bool banking { get; set; }
         [DataMember] public bool bonus { get; set; }
