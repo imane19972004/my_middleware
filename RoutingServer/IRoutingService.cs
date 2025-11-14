@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using RoutingServer;
+using System.ServiceModel;
 using System.Threading.Tasks;
 
-namespace RoutingServer
+[ServiceContract]
+public interface IRoutingService
 {
-    internal class IRoutingService
-    {
-    }
-}
+    [OperationContract]
+    Task<ItineraryResponse> GetItinerary(ItineraryRequest request);
+} 

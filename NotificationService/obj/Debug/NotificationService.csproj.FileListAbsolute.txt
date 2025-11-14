@@ -11,4 +11,3 @@ C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\NotificationService\obj\
 C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\NotificationService\obj\Debug\Notifica.A960C9D4.Up2Date
 C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\NotificationService\obj\Debug\NotificationService.exe
 C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\NotificationService\obj\Debug\NotificationService.pdb
-C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\NotificationService\obj\Debug\NotificationService.exe.config

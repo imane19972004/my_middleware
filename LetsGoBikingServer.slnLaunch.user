@@ -9,6 +9,14 @@
       {
         "Path": "ProxyServer\\ProxyServer.csproj",
         "Action": "Start"
+      },
+      {
+        "Path": "LetsGoBikingWeb\\LetsGoBikingWeb.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "RoutingServer\\RoutingServer.csproj",
+        "Action": "Start"
       }
     ]
   }

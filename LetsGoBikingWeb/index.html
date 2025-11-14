@@ -100,7 +100,6 @@
 				transform: none;
 			}
 
-		/* Section Notifications */
 		.notifications-section {
 			margin-top: 30px;
 			padding-top: 20px;
@@ -111,40 +110,6 @@
 				font-size: 18px;
 				color: #333;
 				margin-bottom: 15px;
-			}
-
-		.topic-selector {
-			display: flex;
-			flex-direction: column;
-			gap: 10px;
-			margin-bottom: 15px;
-		}
-
-		.topic-checkbox {
-			display: flex;
-			align-items: center;
-			padding: 10px;
-			background: #f8f9fa;
-			border-radius: 8px;
-			cursor: pointer;
-			transition: background 0.2s;
-		}
-
-			.topic-checkbox:hover {
-				background: #e9ecef;
-			}
-
-			.topic-checkbox input[type="checkbox"] {
-				width: 18px;
-				height: 18px;
-				margin-right: 10px;
-				cursor: pointer;
-			}
-
-			.topic-checkbox label {
-				margin: 0;
-				cursor: pointer;
-				flex: 1;
 			}
 
 		.notifications-container {
@@ -214,12 +179,6 @@
 			height: 100%;
 		}
 
-		.loading {
-			text-align: center;
-			padding: 20px;
-			color: #667eea;
-		}
-
 		.status {
 			padding: 10px;
 			margin-top: 10px;
@@ -242,7 +201,23 @@
 				color: #0c5460;
 			}
 
-		/* Scrollbar custom */
+		.itinerary-steps {
+			margin-top: 15px;
+			padding: 10px;
+			background: #f8f9fa;
+			border-radius: 8px;
+			max-height: 200px;
+			overflow-y: auto;
+		}
+
+		.step-item {
+			padding: 8px;
+			margin-bottom: 5px;
+			background: white;
+			border-radius: 4px;
+			font-size: 13px;
+		}
+
 		::-webkit-scrollbar {
 			width: 8px;
 		}
@@ -264,19 +239,17 @@
 </head>
 <body>
 	<div class="container">
-		<!-- Sidebar gauche -->
 		<div class="sidebar">
 			<h1>🚴 Let's Go Biking</h1>
 
-			<!-- Formulaire de recherche -->
 			<div class="input-group">
 				<label for="origin">📍 Origine</label>
-				<input type="text" id="origin" placeholder="Ex: Paris, France">
+				<input type="text" id="origin" placeholder="Ex: Paris" value="Paris">
 			</div>
 
 			<div class="input-group">
 				<label for="destination">🎯 Destination</label>
-				<input type="text" id="destination" placeholder="Ex: Lyon, France">
+				<input type="text" id="destination" placeholder="Ex: Lyon" value="Lyon">
 			</div>
 
 			<div class="input-group">
@@ -287,116 +260,65 @@
 			<button class="btn" id="searchBtn">Rechercher un itinéraire</button>
 
 			<div id="status"></div>
+			<div id="itinerarySteps" class="itinerary-steps" style="display:none;"></div>
 
-			<!-- Section Notifications -->
 			<div class="notifications-section">
 				<h2>🔔 Notifications en temps réel</h2>
-
-				<div class="topic-selector">
-					<div class="topic-checkbox">
-						<input type="checkbox" id="weatherTopic" checked>
-						<label for="weatherTopic">🌤️ Alertes météo</label>
-					</div>
-					<div class="topic-checkbox">
-						<input type="checkbox" id="pollutionTopic" checked>
-						<label for="pollutionTopic">🏭 Alertes pollution</label>
-					</div>
-					<div class="topic-checkbox">
-						<input type="checkbox" id="eventTopic" checked>
-						<label for="eventTopic">🎉 Événements</label>
-					</div>
-				</div>
-
-				<button class="btn" id="subscribeBtn">S'abonner aux notifications</button>
-
+				<button class="btn" id="subscribeBtn">Activer les notifications</button>
 				<div id="notifications" class="notifications-container"></div>
 			</div>
 		</div>
 
-		<!-- Carte principale -->
 		<div class="map-container">
 			<div id="map"></div>
 		</div>
 	</div>
 
-	<!-- Bibliothèques -->
 	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
 	<script>
-		// Configuration
+		// ✅ Configuration
 		const CONFIG = {
-			activeMQWebSocketUrl: 'ws://localhost:61614', // Port WebSocket d'ActiveMQ
-			soapServiceUrl: 'http://localhost:8000/LetsGoBikingServer/RoutingService',
-			topics: {
-				weather: 'weather.alerts',
-				pollution: 'pollution.alerts',
-				event: 'event.alerts'
-			}
+			routingServiceUrl: 'http://localhost:8003/RoutingServer'
 		};
 
-		// Initialisation de la carte
-		let map = L.map('map').setView([48.8566, 2.3522], 6); // Centré sur Paris
-
+		// ✅ Initialisation de la carte
+		let map = L.map('map').setView([46.603354, 1.888334], 6); // Centré sur France
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: '© OpenStreetMap contributors'
 		}).addTo(map);
 
-		// Variables globales
-		let stompClient = null;
-		let isConnected = false;
+		let routeLayer = null;
 
-		// Gestion des notifications ActiveMQ
+		// ✅ Gestion des notifications (simulation)
 		document.getElementById('subscribeBtn').addEventListener('click', function () {
-			if (isConnected) {
-				showStatus('Déjà connecté aux notifications !', 'info');
-				return;
-			}
-
-			showStatus('🔌 Connexion en cours...', 'info');
-
-			// Connexion via WebSocket natif (pas SockJS)
-			const socket = new WebSocket(CONFIG.activeMQWebSocketUrl);
-			stompClient = Stomp.over(socket);
-
-			// Désactiver les logs de debug
-			stompClient.debug = function (str) {
-				console.log('STOMP:', str);
-			};
-
-			stompClient.connect('admin', 'admin', function (frame) {
-				isConnected = true;
-				showStatus('✅ Connecté aux notifications !', 'success');
-				console.log('Connected: ' + frame);
-
-				// S'abonner aux topics sélectionnés
-				if (document.getElementById('weatherTopic').checked) {
-					subscribeToTopic(CONFIG.topics.weather);
-				}
-				if (document.getElementById('pollutionTopic').checked) {
-					subscribeToTopic(CONFIG.topics.pollution);
-				}
-				if (document.getElementById('eventTopic').checked) {
-					subscribeToTopic(CONFIG.topics.event);
-				}
-			}, function (error) {
-				showStatus('❌ Erreur de connexion: ' + error, 'error');
-				console.error('Erreur STOMP:', error);
-				isConnected = false;
-			});
+			showStatus('🔔 Notifications activées (mode simulation)', 'info');
+			simulateNotifications();
+			this.disabled = true;
 		});
 
-		function subscribeToTopic(topicName) {
-			const subscription = stompClient.subscribe('/topic/' + topicName, function (message) {
-				console.log('Message reçu:', message.body);
-				try {
-					const notification = JSON.parse(message.body);
-					displayNotification(notification);
-				} catch (e) {
-					console.error('Erreur parsing JSON:', e);
-				}
+		function simulateNotifications() {
+			const notifications = [
+				{ icon: '☀️', message: 'Météo favorable pour le vélo', level: 'green' },
+				{ icon: '✅', message: 'Qualité de l\'air excellente', level: 'green' },
+				{ icon: '⚠️', message: 'Pollution modérée détectée', level: 'orange' },
+				{ icon: '🎉', message: 'Événement en centre-ville', level: 'orange' },
+				{ icon: '🌧️', message: 'Risque de pluie dans 30min', level: 'orange' }
+			];
+
+			setInterval(() => {
+				const notif = notifications[Math.floor(Math.random() * notifications.length)];
+				notif.timestamp = new Date().toLocaleTimeString();
+				displayNotification(notif);
+			}, 15000);
+
+			// Première notification immédiate
+			displayNotification({
+				icon: '🔔',
+				message: 'Système de notifications actif',
+				level: 'green',
+				timestamp: new Date().toLocaleTimeString()
 			});
-			console.log('✅ Abonné au topic: ' + topicName);
 		}
 
 		function displayNotification(notification) {
@@ -411,37 +333,144 @@
 					</div>
 				`;
 			container.insertBefore(div, container.firstChild);
-
-			// Garder seulement les 10 dernières notifications
 			while (container.children.length > 10) {
 				container.removeChild(container.lastChild);
 			}
 		}
 
-		// Gestion de la recherche d'itinéraire
-		document.getElementById('searchBtn').addEventListener('click', function () {
-			const origin = document.getElementById('origin').value;
-			const destination = document.getElementById('destination').value;
-			const minBikes = document.getElementById('minBikes').value;
+		// ✅ Gestion de la recherche d'itinéraire
+		document.getElementById('searchBtn').addEventListener('click', async function () {
+			const origin = document.getElementById('origin').value.trim();
+			const destination = document.getElementById('destination').value.trim();
+			const minBikes = parseInt(document.getElementById('minBikes').value);
 
 			if (!origin || !destination) {
 				showStatus('⚠️ Veuillez renseigner origine et destination', 'error');
 				return;
 			}
 
-			showStatus('🔍 Recherche en cours...', 'info');
+			showStatus('🔍 Calcul de l\'itinéraire en cours...', 'info');
+			this.disabled = true;
 
-			// TODO: Appeler votre service SOAP ici
-			// Pour l'instant, simulation
-			setTimeout(() => {
-				showStatus('✅ Itinéraire calculé !', 'success');
-			}, 1000);
+			try {
+				const itinerary = await callRoutingService(origin, destination, minBikes);
+
+				if (itinerary.Instructions.startsWith('✅')) {
+					showStatus(itinerary.Instructions, 'success');
+					displayItinerarySteps(itinerary.Steps);
+					drawRouteOnMap(itinerary);
+				} else {
+					showStatus(itinerary.Instructions, 'error');
+				}
+			} catch (error) {
+				showStatus('❌ Erreur: ' + error.message, 'error');
+				console.error(error);
+			} finally {
+				this.disabled = false;
+			}
 		});
+
+		// ✅ Appel SOAP au RoutingServer
+		async function callRoutingService(origin, destination, minBikes) {
+			const soapEnvelope = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+				   xmlns:tem="http://tempuri.org/">
+	  <soap:Body>
+		<tem:GetItinerary>
+		  <tem:request>
+			<tem:Origin>${escapeXml(origin)}</tem:Origin>
+			<tem:Destination>${escapeXml(destination)}</tem:Destination>
+			<tem:MinBikes>${minBikes}</tem:MinBikes>
+		  </tem:request>
+		</tem:GetItinerary>
+	  </soap:Body>
+</soap:Envelope>`;
+
+			const response = await fetch(CONFIG.routingServiceUrl, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'text/xml; charset=utf-8',
+					'SOAPAction': 'http://tempuri.org/IRoutingService/GetItinerary'
+				},
+				body: soapEnvelope
+			});
+
+			if (!response.ok) {
+				throw new Error(`Erreur HTTP ${response.status}`);
+			}
+
+			const xmlText = await response.text();
+			return parseSoapResponse(xmlText);
+		}
+
+		function parseSoapResponse(xml) {
+			const parser = new DOMParser();
+			const doc = parser.parseFromString(xml, 'text/xml');
+
+			const getTagValue = (tagName) => {
+				const el = doc.getElementsByTagName(tagName)[0];
+				return el ? el.textContent : '';
+			};
+
+			const steps = [];
+			const stepNodes = doc.getElementsByTagName('Step');
+			for (let node of stepNodes) {
+				steps.push({
+					Instruction: node.getElementsByTagName('Instruction')[0]?.textContent || '',
+					Distance: parseFloat(node.getElementsByTagName('Distance')[0]?.textContent || 0),
+					Type: node.getElementsByTagName('Type')[0]?.textContent || ''
+				});
+			}
+
+			return {
+				Instructions: getTagValue('Instructions'),
+				TotalDistance: parseFloat(getTagValue('TotalDistance')),
+				TotalDuration: parseFloat(getTagValue('TotalDuration')),
+				Steps: steps
+			};
+		}
+
+		function displayItinerarySteps(steps) {
+			const container = document.getElementById('itinerarySteps');
+			container.innerHTML = '<strong>🗺️ Étapes:</strong>';
+
+			steps.forEach((step, i) => {
+				const div = document.createElement('div');
+				div.className = 'step-item';
+				div.innerHTML = `${i + 1}. ${step.Instruction} <em>(${(step.Distance / 1000).toFixed(2)} km)</em>`;
+				container.appendChild(div);
+			});
+
+			container.style.display = 'block';
+		}
+
+		function drawRouteOnMap(itinerary) {
+			// Effacer l'ancien tracé
+			if (routeLayer) {
+				map.removeLayer(routeLayer);
+			}
+
+			// Pour simplifier, on ne trace rien pour l'instant
+			// Dans un vrai projet, vous utiliseriez les coordonnées GPS retournées
+			showStatus('✅ Itinéraire calculé !', 'success');
+		}
 
 		function showStatus(message, type) {
 			const statusDiv = document.getElementById('status');
 			statusDiv.className = `status ${type}`;
 			statusDiv.textContent = message;
+		}
+
+		function escapeXml(unsafe) {
+			return unsafe.replace(/[<>&'"]/g, (c) => {
+				switch (c) {
+					case '<': return '&lt;';
+					case '>': return '&gt;';
+					case '&': return '&amp;';
+					case '\'': return '&apos;';
+					case '"': return '&quot;';
+				}
+			});
 		}
 	</script>
 </body>

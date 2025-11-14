@@ -10,13 +10,13 @@ namespace ProxyServer
         /// Récupère toutes les stations d'un contrat JCDecaux
         /// </summary>
         [OperationContract]
-        Task<string> GetStationsAsync(string contractName);
+        Task<string> GetStationsAsync(string contractName);//Lister toutes les stations d'une ville
 
         /// <summary>
         /// Récupère une station spécifique par son numéro
         /// </summary>
         [OperationContract]
-        Task<string> GetStationByNumberAsync(string contractName, int stationNumber);
+        Task<string> GetStationByNumberAsync(string contractName, int stationNumber);//Station précise
     }
 }
 
@@ -24,4 +24,4 @@ namespace ProxyServer
 
 
 
-// Cette interface définit le contrat SOAP que votre service doit respecter.
+// Cette interface définit le contrat SOAP que votre service doit respecter:ce que les clients veront
