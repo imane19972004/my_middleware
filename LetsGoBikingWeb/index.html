@@ -278,27 +278,88 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
 	<script>
-		// ✅ Configuration
+		// ✅ Configuration - VIRGULE CORRIGÉE !
 		const CONFIG = {
-			routingServiceUrl: 'http://localhost:8003/RoutingServer'
-				stompBrokerUrl: 'ws://localhost:61614/stomp' // ActiveMQ STOMP endpoint
+			routingServiceUrl: 'http://localhost:8003/RoutingServer',  
+			stompBrokerUrl: 'ws://localhost:61614/stomp'
 		};
 
 		// ✅ Initialisation de la carte
-		let map = L.map('map').setView([46.603354, 1.888334], 6); // Centré sur France
+		let map = L.map('map').setView([46.603354, 1.888334], 6);
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: '© OpenStreetMap contributors'
 		}).addTo(map);
 
 		let routeLayer = null;
+		let stompClient = null;
+		let isConnectedToStomp = false;
 
-		// ✅ Gestion des notifications (simulation)
+		// ✅ Connexion STOMP à ActiveMQ
+		function connectToActiveMQ() {
+			const ws = new WebSocket(CONFIG.stompBrokerUrl);
+			stompClient = Stomp.over(ws);
+
+			stompClient.connect('admin', 'admin',
+				function onConnect() {
+					console.log('✅ Connecté à ActiveMQ');
+					isConnectedToStomp = true;
+					showStatus('🔔 Notifications activées (ActiveMQ connecté)', 'success');
+
+					// S'abonner aux topics
+					stompClient.subscribe('/topic/weather', function (message) {
+						const data = JSON.parse(message.body);
+						displayNotification({
+							icon: '☀️',
+							message: data.message || 'Météo mise à jour',
+							level: data.severity || 'green',
+							timestamp: new Date().toLocaleTimeString()
+						});
+					});
+
+					stompClient.subscribe('/topic/pollution', function (message) {
+						const data = JSON.parse(message.body);
+						displayNotification({
+							icon: '🌿',
+							message: data.message || 'Qualité de l\'air mise à jour',
+							level: data.severity || 'green',
+							timestamp: new Date().toLocaleTimeString()
+						});
+					});
+
+					stompClient.subscribe('/topic/events', function (message) {
+						const data = JSON.parse(message.body);
+						displayNotification({
+							icon: '🎉',
+							message: data.message || 'Événement détecté',
+							level: data.severity || 'orange',
+							timestamp: new Date().toLocaleTimeString()
+						});
+					});
+
+					// Message de bienvenue
+					displayNotification({
+						icon: '🔔',
+						message: 'Connexion ActiveMQ réussie ! Notifications en temps réel activées.',
+						level: 'green',
+						timestamp: new Date().toLocaleTimeString()
+					});
+				},
+				function onError(error) {
+					console.error('❌ Erreur ActiveMQ:', error);
+					isConnectedToStomp = false;
+					showStatus('⚠️ ActiveMQ non disponible, mode simulation activé', 'error');
+					simulateNotifications();
+				}
+			);
+		}
+
+		// ✅ Gestion des notifications
 		document.getElementById('subscribeBtn').addEventListener('click', function () {
-			showStatus('🔔 Notifications activées (mode simulation)', 'info');
-			simulateNotifications();
 			this.disabled = true;
+			connectToActiveMQ();
 		});
 
+		// Mode simulation si ActiveMQ pas dispo
 		function simulateNotifications() {
 			const notifications = [
 				{ icon: '☀️', message: 'Météo favorable pour le vélo', level: 'green' },
@@ -312,12 +373,11 @@
 				const notif = notifications[Math.floor(Math.random() * notifications.length)];
 				notif.timestamp = new Date().toLocaleTimeString();
 				displayNotification(notif);
-			}, 15000);
+			}, 20000);
 
-			// Première notification immédiate
 			displayNotification({
 				icon: '🔔',
-				message: 'Système de notifications actif',
+				message: 'Système de notifications actif (mode simulation)',
 				level: 'green',
 				timestamp: new Date().toLocaleTimeString()
 			});
@@ -328,12 +388,12 @@
 			const div = document.createElement('div');
 			div.className = `notification ${notification.level}`;
 			div.innerHTML = `
-						<div class="notification-icon">${notification.icon}</div>
-						<div class="notification-content">
-							<div class="notification-message">${notification.message}</div>
-							<div class="notification-time">${notification.timestamp}</div>
-						</div>
-					`;
+					<div class="notification-icon">${notification.icon}</div>
+					<div class="notification-content">
+						<div class="notification-message">${notification.message}</div>
+						<div class="notification-time">${notification.timestamp}</div>
+					</div>
+				`;
 			container.insertBefore(div, container.firstChild);
 			while (container.children.length > 10) {
 				container.removeChild(container.lastChild);
@@ -357,12 +417,12 @@
 			try {
 				const itinerary = await callRoutingService(origin, destination, minBikes);
 
-				if (itinerary.Instructions.startsWith('✅')) {
+				if (itinerary.Instructions && itinerary.Instructions.includes('✅')) {
 					showStatus(itinerary.Instructions, 'success');
 					displayItinerarySteps(itinerary.Steps);
 					drawRouteOnMap(itinerary);
 				} else {
-					showStatus(itinerary.Instructions, 'error');
+					showStatus(itinerary.Instructions || '❌ Erreur inconnue', 'error');
 				}
 			} catch (error) {
 				showStatus('❌ Erreur: ' + error.message, 'error');
@@ -376,16 +436,16 @@
 		async function callRoutingService(origin, destination, minBikes) {
 			const soapEnvelope = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
-					   xmlns:tem="http://tempuri.org/">
-		  <soap:Body>
-			<tem:GetItinerary>
-			  <tem:request>
-				<tem:Origin>${escapeXml(origin)}</tem:Origin>
-				<tem:Destination>${escapeXml(destination)}</tem:Destination>
-				<tem:MinBikes>${minBikes}</tem:MinBikes>
-			  </tem:request>
-			</tem:GetItinerary>
-		  </soap:Body>
+				   xmlns:tem="http://tempuri.org/">
+	  <soap:Body>
+		<tem:GetItinerary>
+		  <tem:request>
+			<tem:Origin>${escapeXml(origin)}</tem:Origin>
+			<tem:Destination>${escapeXml(destination)}</tem:Destination>
+			<tem:MinBikes>${minBikes}</tem:MinBikes>
+		  </tem:request>
+		</tem:GetItinerary>
+	  </soap:Body>
 </soap:Envelope>`;
 
 			const response = await fetch(CONFIG.routingServiceUrl, {
@@ -436,24 +496,24 @@
 			const container = document.getElementById('itinerarySteps');
 			container.innerHTML = '<strong>🗺️ Étapes:</strong>';
 
-			steps.forEach((step, i) => {
-				const div = document.createElement('div');
-				div.className = 'step-item';
-				div.innerHTML = `${i + 1}. ${step.Instruction} <em>(${(step.Distance / 1000).toFixed(2)} km)</em>`;
-				container.appendChild(div);
-			});
+			if (!steps || steps.length === 0) {
+				container.innerHTML += '<div class="step-item">Aucune étape disponible</div>';
+			} else {
+				steps.forEach((step, i) => {
+					const div = document.createElement('div');
+					div.className = 'step-item';
+					div.innerHTML = `${i + 1}. ${step.Instruction} <em>(${(step.Distance / 1000).toFixed(2)} km)</em>`;
+					container.appendChild(div);
+				});
+			}
 
 			container.style.display = 'block';
 		}
 
 		function drawRouteOnMap(itinerary) {
-			// Effacer l'ancien tracé
 			if (routeLayer) {
 				map.removeLayer(routeLayer);
 			}
-
-			// Pour simplifier, on ne trace rien pour l'instant
-			// Dans un vrai projet, vous utiliseriez les coordonnées GPS retournées
 			showStatus('✅ Itinéraire calculé !', 'success');
 		}
 
@@ -474,6 +534,9 @@
 				}
 			});
 		}
+
+		// Test au chargement
+		console.log('✅ JavaScript chargé correctement');
 	</script>
 </body>
 </html>

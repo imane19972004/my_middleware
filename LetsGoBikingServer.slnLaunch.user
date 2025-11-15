@@ -17,6 +17,10 @@
       {
         "Path": "RoutingServer\\RoutingServer.csproj",
         "Action": "Start"
+      },
+      {
+        "Path": "NotificationService\\NotificationService.csproj",
+        "Action": "Start"
       }
     ]
   }
