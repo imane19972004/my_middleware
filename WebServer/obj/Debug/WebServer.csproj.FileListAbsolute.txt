@@ -1,0 +1,8 @@
+C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\WebServer\bin\Debug\WebServer.exe.config
+C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\WebServer\bin\Debug\WebServer.exe
+C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\WebServer\bin\Debug\WebServer.pdb
+C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\WebServer\obj\Debug\WebServer.csproj.AssemblyReference.cache
+C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\WebServer\obj\Debug\WebServer.csproj.CoreCompileInputs.cache
+C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\WebServer\obj\Debug\WebServer.exe
+C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\WebServer\obj\Debug\WebServer.pdb
+C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\WebServer\obj\Debug\WebServer.exe.config
