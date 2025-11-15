@@ -275,11 +275,13 @@
 	</div>
 
 	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
 	<script>
 		// ✅ Configuration
 		const CONFIG = {
 			routingServiceUrl: 'http://localhost:8003/RoutingServer'
+				stompBrokerUrl: 'ws://localhost:61614/stomp' // ActiveMQ STOMP endpoint
 		};
 
 		// ✅ Initialisation de la carte
@@ -326,12 +328,12 @@
 			const div = document.createElement('div');
 			div.className = `notification ${notification.level}`;
 			div.innerHTML = `
-					<div class="notification-icon">${notification.icon}</div>
-					<div class="notification-content">
-						<div class="notification-message">${notification.message}</div>
-						<div class="notification-time">${notification.timestamp}</div>
-					</div>
-				`;
+						<div class="notification-icon">${notification.icon}</div>
+						<div class="notification-content">
+							<div class="notification-message">${notification.message}</div>
+							<div class="notification-time">${notification.timestamp}</div>
+						</div>
+					`;
 			container.insertBefore(div, container.firstChild);
 			while (container.children.length > 10) {
 				container.removeChild(container.lastChild);
@@ -374,16 +376,16 @@
 		async function callRoutingService(origin, destination, minBikes) {
 			const soapEnvelope = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
-				   xmlns:tem="http://tempuri.org/">
-	  <soap:Body>
-		<tem:GetItinerary>
-		  <tem:request>
-			<tem:Origin>${escapeXml(origin)}</tem:Origin>
-			<tem:Destination>${escapeXml(destination)}</tem:Destination>
-			<tem:MinBikes>${minBikes}</tem:MinBikes>
-		  </tem:request>
-		</tem:GetItinerary>
-	  </soap:Body>
+					   xmlns:tem="http://tempuri.org/">
+		  <soap:Body>
+			<tem:GetItinerary>
+			  <tem:request>
+				<tem:Origin>${escapeXml(origin)}</tem:Origin>
+				<tem:Destination>${escapeXml(destination)}</tem:Destination>
+				<tem:MinBikes>${minBikes}</tem:MinBikes>
+			  </tem:request>
+			</tem:GetItinerary>
+		  </soap:Body>
 </soap:Envelope>`;
 
 			const response = await fetch(CONFIG.routingServiceUrl, {

@@ -10,35 +10,32 @@
       "AbsoluteMoniker": "D:0:0:{00000000-0000-0000-0000-000000000000}|\u003CSolution\u003E|NotificationService||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|c:\\users\\user\\desktop\\my_middleware\\my_middleware\\notificationservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\notificationservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|solutionrelative:notificationservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|c:\\users\\user\\desktop\\my_middleware\\my_middleware\\notificationservice\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "AbsoluteMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\notificationservice\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
       "RelativeMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|solutionrelative:notificationservice\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|c:\\users\\user\\desktop\\my_middleware\\my_middleware\\notificationservice\\constants.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\notificationservice\\constants.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|solutionrelative:notificationservice\\constants.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|c:\\users\\user\\desktop\\my_middleware\\my_middleware\\notificationservice\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "AbsoluteMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\notificationservice\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
       "RelativeMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|solutionrelative:notificationservice\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{E8DCCB01-C735-48F5-BD86-C7F4480BA5E9}|ProxyServer\\ProxyServer.csproj|c:\\users\\user\\desktop\\my_middleware\\my_middleware\\proxyserver\\proxyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{E8DCCB01-C735-48F5-BD86-C7F4480BA5E9}|ProxyServer\\ProxyServer.csproj|C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\proxyserver\\proxyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E8DCCB01-C735-48F5-BD86-C7F4480BA5E9}|ProxyServer\\ProxyServer.csproj|solutionrelative:proxyserver\\proxyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{E8DCCB01-C735-48F5-BD86-C7F4480BA5E9}|ProxyServer\\ProxyServer.csproj|c:\\users\\user\\desktop\\my_middleware\\my_middleware\\proxyserver\\.env.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "AbsoluteMoniker": "D:0:0:{E8DCCB01-C735-48F5-BD86-C7F4480BA5E9}|ProxyServer\\ProxyServer.csproj|C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\proxyserver\\.env.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{E8DCCB01-C735-48F5-BD86-C7F4480BA5E9}|ProxyServer\\ProxyServer.csproj|solutionrelative:proxyserver\\.env.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{BE32933D-5E95-4BCC-B0FE-F9AD60E2EA3A}|RoutingServer\\RoutingServer.csproj|c:\\users\\user\\desktop\\my_middleware\\my_middleware\\routingserver\\models.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{BE32933D-5E95-4BCC-B0FE-F9AD60E2EA3A}|RoutingServer\\RoutingServer.csproj|C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\routingserver\\models.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{BE32933D-5E95-4BCC-B0FE-F9AD60E2EA3A}|RoutingServer\\RoutingServer.csproj|solutionrelative:routingserver\\models.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DE27FC9C-A21C-4569-B7A0-0663703CE337}|NotificationService\\NotificationService.csproj|c:\\users\\user\\desktop\\my_middleware\\my_middleware\\notificationservice\\||{B270807C-D8C6-49EB-8EBE-8E8D566637A1}|a54ad834-9219-4aa6-b589-607af21c3e26"
     }
   ],
   "DocumentGroupContainers": [
@@ -48,44 +45,19 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "NotificationService",
-              "DocumentMoniker": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\NotificationService.csproj",
-              "RelativeDocumentMoniker": "NotificationService\\NotificationService.csproj",
-              "ToolTip": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\NotificationService.csproj",
-              "RelativeToolTip": "NotificationService\\NotificationService.csproj",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-11-15T07:28:39.657Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\Program.cs",
-              "RelativeDocumentMoniker": "NotificationService\\Program.cs",
-              "ToolTip": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\Program.cs",
-              "RelativeToolTip": "NotificationService\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAABAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "NotificationPublisher.cs",
+              "DocumentMoniker": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\NotificationPublisher.cs",
+              "RelativeDocumentMoniker": "NotificationService\\NotificationPublisher.cs",
+              "ToolTip": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\NotificationPublisher.cs",
+              "RelativeToolTip": "NotificationService\\NotificationPublisher.cs",
+              "ViewState": "AgIAAEAAAAAAAAAAAAAYwGwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T07:22:00.59Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "packages.config",
-              "DocumentMoniker": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\packages.config",
-              "RelativeDocumentMoniker": "NotificationService\\packages.config",
-              "ToolTip": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\packages.config",
-              "RelativeToolTip": "NotificationService\\packages.config",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAALAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
-              "WhenOpened": "2025-11-15T07:21:56.011Z",
+              "WhenOpened": "2025-11-15T06:03:41.718Z",
               "EditorCaption": ""
             },
             {
@@ -98,21 +70,42 @@
               "RelativeToolTip": "NotificationService\\Constants.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T06:56:39.676Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-15T06:56:39.676Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "NotificationPublisher.cs",
-              "DocumentMoniker": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\NotificationPublisher.cs",
-              "RelativeDocumentMoniker": "NotificationService\\NotificationPublisher.cs",
-              "ToolTip": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\NotificationPublisher.cs",
-              "RelativeToolTip": "NotificationService\\NotificationPublisher.cs",
-              "ViewState": "AgIAAEAAAAAAAAAAAAAYwEYAAAAJAAAAAAAAAA==",
+              "DocumentIndex": 3,
+              "Title": "packages.config",
+              "DocumentMoniker": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\packages.config",
+              "RelativeDocumentMoniker": "NotificationService\\packages.config",
+              "ToolTip": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\packages.config",
+              "RelativeToolTip": "NotificationService\\packages.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2025-11-15T07:21:56.011Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\Program.cs",
+              "RelativeDocumentMoniker": "NotificationService\\Program.cs",
+              "ToolTip": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\Program.cs",
+              "RelativeToolTip": "NotificationService\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T06:03:41.718Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-15T07:22:00.59Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "NotificationService",
+              "DocumentMoniker": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\NotificationService.csproj",
+              "RelativeDocumentMoniker": "NotificationService\\NotificationService.csproj",
+              "ToolTip": "C:\\Users\\user\\Desktop\\my_middleware\\my_middleware\\NotificationService\\NotificationService.csproj",
+              "RelativeToolTip": "NotificationService\\NotificationService.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-11-15T07:28:39.657Z"
             },
             {
               "$type": "Document",
@@ -124,8 +117,7 @@
               "RelativeToolTip": "NotificationService\\App.config",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
-              "WhenOpened": "2025-11-15T07:21:32.359Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-15T07:21:32.359Z"
             },
             {
               "$type": "Document",
@@ -137,8 +129,7 @@
               "RelativeToolTip": "ProxyServer\\ProxyService.cs",
               "ViewState": "AgIAAK8AAAAAAAAAAAAswLoAAABOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-15T05:37:48.765Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-15T05:37:48.765Z"
             },
             {
               "$type": "Document",
@@ -150,8 +141,7 @@
               "RelativeToolTip": "ProxyServer\\.env.txt",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
-              "WhenOpened": "2025-11-15T05:37:24.733Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-15T05:37:24.733Z"
             },
             {
               "$type": "Document",
@@ -163,8 +153,7 @@
               "RelativeToolTip": "RoutingServer\\Models.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADkAAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-14T13:00:59.513Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-14T13:00:59.513Z"
             }
           ]
         }
