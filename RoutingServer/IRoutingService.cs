@@ -1,10 +1,21 @@
-﻿using RoutingServer;
+﻿//using RoutingServer;
+//using System.ServiceModel;
+//using System.Threading.Tasks;
+
+//[ServiceContract]
+//public interface IRoutingService
+//{
+//    [OperationContract]
+//    Task<ItineraryResponse> GetItinerary(ItineraryRequest request);
+//} 
+
+using RoutingServer;
 using System.ServiceModel;
 using System.Threading.Tasks;
 
-[ServiceContract]
+[ServiceContract(Namespace = "http://tempuri.org/")]
 public interface IRoutingService
 {
-    [OperationContract]
+    [OperationContract(Action = "http://tempuri.org/IRoutingService/GetItinerary")]
     Task<ItineraryResponse> GetItinerary(ItineraryRequest request);
-} 
+}
