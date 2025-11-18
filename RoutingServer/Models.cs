@@ -6,13 +6,13 @@ namespace RoutingServer
     [DataContract]
     public class ItineraryRequest
     {
-        [DataMember]
+        [DataMember(Order = 0)]
         public string Origin { get; set; }
 
-        [DataMember]
+        [DataMember(Order = 1)]
         public string Destination { get; set; }
 
-        [DataMember]
+        [DataMember(Order = 2)]
         public int MinBikes { get; set; }
     }
 

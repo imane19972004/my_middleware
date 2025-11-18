@@ -22,19 +22,33 @@ namespace RoutingServer
             Console.WriteLine("✅ RoutingService initialisé");
         }
 
-        public async Task<ItineraryResponse> GetItinerary(ItineraryRequest request)
+       // public async Task<ItineraryResponse> GetItinerary(ItineraryRequest request)
+        public async Task<ItineraryResponse> GetItinerary(String origin , String destination )
         {
-            Console.WriteLine($"\n🚴 NOUVELLE REQUÊTE: {request.Origin} → {request.Destination}");
+            //// 🔍 AJOUTEZ CES 3 LIGNES ICI
+            //Console.WriteLine($"DEBUG - REQUEST: '{request}'");
+            //Console.WriteLine($"DEBUG - Origin: '{request?.Origin ?? "NULL"}'");
+            //Console.WriteLine($"DEBUG - Destination: '{request?.Destination ?? "NULL"}'");
+            //Console.WriteLine($"DEBUG - MinBikes: {request?.MinBikes ?? 0}");
+
+            //Console.WriteLine($"\n🚴 NOUVELLE REQUÊTE: {request.Origin} → {request.Destination}");
+            //Console.WriteLine($"\n🚴 NOUVELLE REQUÊTE: {request.Origin} → {request.Destination}");
+
+            Console.WriteLine($"DEBUG - Origin: '{origin ?? "NULL"}'");
+            Console.WriteLine($"DEBUG - Destination: '{destination ?? "NULL"}'");
 
             try
             {
                 // 1️⃣ Géocoder origine et destination
-                var originPos = await _routeService.GeocodeAddress(request.Origin);
-                var destPos = await _routeService.GeocodeAddress(request.Destination);
+                //var originPos = await _routeService.GeocodeAddress(request.Origin);
+                //var destPos = await _routeService.GeocodeAddress(request.Destination);
+                var originPos = await _routeService.GeocodeAddress(origin);
+                var destPos = await _routeService.GeocodeAddress(destination);
+
 
                 if (originPos == null || destPos == null)
                 {
-                    return CreateErrorResponse("❌ Impossible de localiser l'origine ou la destination");
+                    return CreateErrorResponse(" Impossible de localiser l'origine ou la destination");
                 }
 
                 // 2️⃣ Calculer distance directe
@@ -49,7 +63,8 @@ namespace RoutingServer
                 }
 
                 // 4️⃣ Chercher des stations vélo
-                var originStation = await _jcdProxy.GetClosestStation(originPos, request.MinBikes);
+                // var originStation = await _jcdProxy.GetClosestStation(originPos, request.MinBikes);
+                var originStation = await _jcdProxy.GetClosestStation(originPos, 1);
                 var destStation = await _jcdProxy.GetClosestStation(destPos, 1); // Au moins 1 place libre
 
                 if (originStation == null || destStation == null)

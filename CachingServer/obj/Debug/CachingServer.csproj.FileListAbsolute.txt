@@ -5,4 +5,3 @@ C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\CachingServer\obj\Debug\
 C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\CachingServer\obj\Debug\CachingServer.csproj.CoreCompileInputs.cache
 C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\CachingServer\obj\Debug\CachingServer.exe
 C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\CachingServer\obj\Debug\CachingServer.pdb
-C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\CachingServer\obj\Debug\CachingServer.exe.config
