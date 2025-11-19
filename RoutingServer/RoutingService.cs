@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 
 namespace RoutingServer
 {
-    /// <summary>
-    /// Service principal de calcul d'itinéraires vélo
-    /// </summary>
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class RoutingService : IRoutingService
     {
@@ -22,33 +19,34 @@ namespace RoutingServer
             Console.WriteLine("✅ RoutingService initialisé");
         }
 
-       // public async Task<ItineraryResponse> GetItinerary(ItineraryRequest request)
-        public async Task<ItineraryResponse> GetItinerary(String origin , String destination )
+        public async Task<ItineraryResponse> GetItinerary(ItineraryRequest request)
         {
-            //// 🔍 AJOUTEZ CES 3 LIGNES ICI
-            //Console.WriteLine($"DEBUG - REQUEST: '{request}'");
-            //Console.WriteLine($"DEBUG - Origin: '{request?.Origin ?? "NULL"}'");
-            //Console.WriteLine($"DEBUG - Destination: '{request?.Destination ?? "NULL"}'");
-            //Console.WriteLine($"DEBUG - MinBikes: {request?.MinBikes ?? 0}");
+            // ✅ VALIDATION CRITIQUE
+            if (request == null)
+            {
+                Console.WriteLine("❌ REQUEST EST NULL!");
+                return CreateErrorResponse("❌ Requête invalide (null)");
+            }
 
-            //Console.WriteLine($"\n🚴 NOUVELLE REQUÊTE: {request.Origin} → {request.Destination}");
-            //Console.WriteLine($"\n🚴 NOUVELLE REQUÊTE: {request.Origin} → {request.Destination}");
+            Console.WriteLine($"\n🚴 REQUÊTE REÇUE:");
+            Console.WriteLine($"   Origin: '{request.Origin ?? "NULL"}'");
+            Console.WriteLine($"   Destination: '{request.Destination ?? "NULL"}'");
+            Console.WriteLine($"   MinBikes: {request.MinBikes}");
 
-            Console.WriteLine($"DEBUG - Origin: '{origin ?? "NULL"}'");
-            Console.WriteLine($"DEBUG - Destination: '{destination ?? "NULL"}'");
+            if (string.IsNullOrWhiteSpace(request.Origin) || string.IsNullOrWhiteSpace(request.Destination))
+            {
+                return CreateErrorResponse("❌ Origine ou destination manquante");
+            }
 
             try
             {
                 // 1️⃣ Géocoder origine et destination
-                //var originPos = await _routeService.GeocodeAddress(request.Origin);
-                //var destPos = await _routeService.GeocodeAddress(request.Destination);
-                var originPos = await _routeService.GeocodeAddress(origin);
-                var destPos = await _routeService.GeocodeAddress(destination);
-
+                var originPos = await _routeService.GeocodeAddress(request.Origin);
+                var destPos = await _routeService.GeocodeAddress(request.Destination);
 
                 if (originPos == null || destPos == null)
                 {
-                    return CreateErrorResponse(" Impossible de localiser l'origine ou la destination");
+                    return CreateErrorResponse("❌ Impossible de localiser l'origine ou la destination");
                 }
 
                 // 2️⃣ Calculer distance directe
@@ -63,9 +61,8 @@ namespace RoutingServer
                 }
 
                 // 4️⃣ Chercher des stations vélo
-                // var originStation = await _jcdProxy.GetClosestStation(originPos, request.MinBikes);
-                var originStation = await _jcdProxy.GetClosestStation(originPos, 1);
-                var destStation = await _jcdProxy.GetClosestStation(destPos, 1); // Au moins 1 place libre
+                var originStation = await _jcdProxy.GetClosestStation(originPos, request.MinBikes > 0 ? request.MinBikes : 1);
+                var destStation = await _jcdProxy.GetClosestStation(destPos, 1);
 
                 if (originStation == null || destStation == null)
                 {
@@ -91,13 +88,11 @@ namespace RoutingServer
             catch (Exception ex)
             {
                 Console.WriteLine($"   ❌ ERREUR: {ex.Message}");
-                return CreateErrorResponse($"Erreur lors du calcul: {ex.Message}");
+                Console.WriteLine($"   Stack: {ex.StackTrace}");
+                return CreateErrorResponse($"❌ Erreur lors du calcul: {ex.Message}");
             }
         }
 
-        /// <summary>
-        /// Crée un itinéraire 100% piéton
-        /// </summary>
         private async Task<ItineraryResponse> CreateWalkingOnlyItinerary(Position origin, Position dest)
         {
             var route = await _routeService.GetWalkingRoute(origin, dest);
@@ -119,9 +114,6 @@ namespace RoutingServer
             };
         }
 
-        /// <summary>
-        /// Crée un itinéraire combinant marche + vélo + marche
-        /// </summary>
         private async Task<ItineraryResponse> CreateBikeItinerary(
             Position origin, Position dest, Station originStation, Station destStation)
         {
@@ -187,9 +179,6 @@ namespace RoutingServer
             };
         }
 
-        /// <summary>
-        /// Crée une réponse d'erreur
-        /// </summary>
         private ItineraryResponse CreateErrorResponse(string message)
         {
             return new ItineraryResponse

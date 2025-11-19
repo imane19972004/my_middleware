@@ -16,23 +16,14 @@ namespace RoutingServer
 
                 using (var host = new ServiceHost(typeof(RoutingService), baseAddress))
                 {
-                    // ✅ Configuration du binding avec CORS
-                    var binding = new CustomBinding();
-
-                    var textEncoding = new TextMessageEncodingBindingElement
-                    {
-                        MessageVersion = MessageVersion.Soap11
-                    };
-
-                    var httpTransport = new HttpTransportBindingElement
+                    // ✅ UTILISER BasicHttpBinding (SOAP 1.1 - plus compatible avec Postman)
+                    var binding = new BasicHttpBinding
                     {
                         MaxReceivedMessageSize = 2147483647,
                         MaxBufferSize = 2147483647,
-                        TransferMode = TransferMode.Buffered
+                        SendTimeout = TimeSpan.FromMinutes(10),
+                        ReceiveTimeout = TimeSpan.FromMinutes(10)
                     };
-
-                    binding.Elements.Add(textEncoding);
-                    binding.Elements.Add(httpTransport);
 
                     host.AddServiceEndpoint(typeof(IRoutingService), binding, "");
 
@@ -52,6 +43,12 @@ namespace RoutingServer
 
                     // ✅ Démarrage
                     host.Open();
+                    
+                    // ✅ AJOUTER CONTROLLER REST
+                    var restController = new RestController();
+                    restController.Start();
+
+
 
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine("╔════════════════════════════════════════════╗");
@@ -101,7 +98,6 @@ namespace RoutingServer
     {
         public object AfterReceiveRequest(ref Message request, IClientChannel channel, InstanceContext instanceContext)
         {
-            // Gérer les requêtes OPTIONS (preflight)
             var httpRequest = request.Properties[HttpRequestMessageProperty.Name] as HttpRequestMessageProperty;
             if (httpRequest != null && httpRequest.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
             {
@@ -112,7 +108,6 @@ namespace RoutingServer
 
         public void BeforeSendReply(ref Message reply, object correlationState)
         {
-            // Ajouter les headers CORS à toutes les réponses
             if (reply.Properties.ContainsKey(HttpResponseMessageProperty.Name))
             {
                 var httpResponse = reply.Properties[HttpResponseMessageProperty.Name] as HttpResponseMessageProperty;
@@ -123,7 +118,6 @@ namespace RoutingServer
                     httpResponse.Headers.Add("Access-Control-Allow-Headers", "Content-Type, SOAPAction");
                     httpResponse.Headers.Add("Access-Control-Max-Age", "86400");
 
-                    // Si c'était une requête OPTIONS, renvoyer 200 OK
                     if (correlationState != null && correlationState.ToString() == "OPTIONS")
                     {
                         httpResponse.StatusCode = System.Net.HttpStatusCode.OK;

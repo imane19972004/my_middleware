@@ -73,6 +73,7 @@
     <Compile Include="OpenRouteService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RestController.cs" />
     <Compile Include="RoutingService.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace RoutingServer
 {
     /// <summary>
-    /// Contrôleur REST simple pour éviter les problèmes CORS avec SOAP
+    /// Contrôleur REST pour éviter les problèmes CORS avec SOAP
     /// </summary>
     public class RestController
     {
