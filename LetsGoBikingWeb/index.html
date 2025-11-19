@@ -235,6 +235,12 @@
 			::-webkit-scrollbar-thumb:hover {
 				background: #764ba2;
 			}
+
+		/* Style pour les marqueurs personnalisés */
+		.custom-marker {
+			background: none;
+			border: none;
+		}
 	</style>
 </head>
 <body>
@@ -244,12 +250,12 @@
 
 			<div class="input-group">
 				<label for="origin">📍 Origine</label>
-				<input type="text" id="origin" placeholder="Ex: Paris" value="Paris">
+				<input type="text" id="origin" placeholder="Ex: Lyon" value="Lyon">
 			</div>
 
 			<div class="input-group">
 				<label for="destination">🎯 Destination</label>
-				<input type="text" id="destination" placeholder="Ex: Lyon" value="Lyon">
+				<input type="text" id="destination" placeholder="Ex: Toulouse" value="Toulouse">
 			</div>
 
 			<div class="input-group">
@@ -279,8 +285,22 @@
 
 	<script>
 		const CONFIG = {
-			routingServiceUrl: 'http://localhost:8003/RoutingServer',
+			routingServiceUrl: 'http://localhost:8004/api/itinerary',
 			stompBrokerUrl: 'ws://localhost:61614/stomp'
+		};
+
+		// Base de données de villes avec leurs coordonnées
+		const CITIES_DATABASE = {
+			'Lyon': { lat: 45.7640, lng: 4.8357 },
+			'Toulouse': { lat: 43.6047, lng: 1.4442 },
+			'Paris': { lat: 48.8566, lng: 2.3522 },
+			'Marseille': { lat: 43.2965, lng: 5.3698 },
+			'Nice': { lat: 43.7102, lng: 7.2620 },
+			'Nantes': { lat: 47.2184, lng: -1.5536 },
+			'Strasbourg': { lat: 48.5734, lng: 7.7521 },
+			'Montpellier': { lat: 43.6108, lng: 3.8767 },
+			'Bordeaux': { lat: 44.8378, lng: -0.5792 },
+			'Lille': { lat: 50.6292, lng: 3.0573 }
 		};
 
 		let map = L.map('map').setView([46.603354, 1.888334], 6);
@@ -302,7 +322,7 @@
 					isConnectedToStomp = true;
 					showStatus('🔔 Notifications activées (ActiveMQ connecté)', 'success');
 
-					stompClient.subscribe('/topic/weather', function (message) {
+					stompClient.subscribe('/topic/weather.alerts', function (message) {
 						const data = JSON.parse(message.body);
 						displayNotification({
 							icon: '☀️',
@@ -312,7 +332,7 @@
 						});
 					});
 
-					stompClient.subscribe('/topic/pollution', function (message) {
+					stompClient.subscribe('/topic/pollution.alerts', function (message) {
 						const data = JSON.parse(message.body);
 						displayNotification({
 							icon: '🌿',
@@ -322,7 +342,7 @@
 						});
 					});
 
-					stompClient.subscribe('/topic/events', function (message) {
+					stompClient.subscribe('/topic/event.alerts', function (message) {
 						const data = JSON.parse(message.body);
 						displayNotification({
 							icon: '🎉',
@@ -407,12 +427,12 @@
 			this.disabled = true;
 
 			try {
-				const itinerary = await callRoutingService(origin, destination, minBikes);
+				const itinerary = await callRoutingServiceREST(origin, destination, minBikes);
 
 				if (itinerary.Instructions && itinerary.Instructions.includes('✅')) {
 					showStatus(itinerary.Instructions, 'success');
 					displayItinerarySteps(itinerary.Steps);
-					drawRouteOnMap(itinerary);
+					drawRouteOnMap(itinerary, origin, destination);
 				} else {
 					showStatus(itinerary.Instructions || '❌ Erreur inconnue', 'error');
 				}
@@ -424,63 +444,24 @@
 			}
 		});
 
-		async function callRoutingService(origin, destination, minBikes) {
-			const soapEnvelope = `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
-				   xmlns:tem="http://tempuri.org/">
-	  <soap:Body>
-		<tem:GetItinerary>
-		  <tem:request>
-			<tem:Origin>${escapeXml(origin)}</tem:Origin>
-			<tem:Destination>${escapeXml(destination)}</tem:Destination>
-			<tem:MinBikes>${minBikes}</tem:MinBikes>
-		  </tem:request>
-		</tem:GetItinerary>
-	  </soap:Body>
-</soap:Envelope>`;
-
+		async function callRoutingServiceREST(origin, destination, minBikes) {
 			const response = await fetch(CONFIG.routingServiceUrl, {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'text/xml; charset=utf-8',
-					'SOAPAction': 'http://tempuri.org/IRoutingService/GetItinerary'
+					'Content-Type': 'application/json'
 				},
-				body: soapEnvelope
+				body: JSON.stringify({
+					Origin: origin,
+					Destination: destination,
+					MinBikes: minBikes
+				})
 			});
 
 			if (!response.ok) {
 				throw new Error(`Erreur HTTP ${response.status}`);
 			}
 
-			const xmlText = await response.text();
-			return parseSoapResponse(xmlText);
-		}
-
-		function parseSoapResponse(xml) {
-			const parser = new DOMParser();
-			const doc = parser.parseFromString(xml, 'text/xml');
-
-			const getTagValue = (tagName) => {
-				const el = doc.getElementsByTagName(tagName)[0];
-				return el ? el.textContent : '';
-			};
-
-			const steps = [];
-			const stepNodes = doc.getElementsByTagName('Step');
-			for (let node of stepNodes) {
-				steps.push({
-					Instruction: node.getElementsByTagName('Instruction')[0]?.textContent || '',
-					Distance: parseFloat(node.getElementsByTagName('Distance')[0]?.textContent || 0),
-					Type: node.getElementsByTagName('Type')[0]?.textContent || ''
-				});
-			}
-
-			return {
-				Instructions: getTagValue('Instructions'),
-				TotalDistance: parseFloat(getTagValue('TotalDistance')),
-				TotalDuration: parseFloat(getTagValue('TotalDuration')),
-				Steps: steps
-			};
+			return await response.json();
 		}
 
 		function displayItinerarySteps(steps) {
@@ -493,7 +474,8 @@
 				steps.forEach((step, i) => {
 					const div = document.createElement('div');
 					div.className = 'step-item';
-					div.innerHTML = `${i + 1}. ${step.Instruction} <em>(${(step.Distance / 1000).toFixed(2)} km)</em>`;
+					const icon = step.Type === 'walk' ? '🚶' : '🚴';
+					div.innerHTML = `${i + 1}. ${icon} ${step.Instruction} <em>(${(step.Distance / 1000).toFixed(2)} km)</em>`;
 					container.appendChild(div);
 				});
 			}
@@ -501,11 +483,166 @@
 			container.style.display = 'block';
 		}
 
-		function drawRouteOnMap(itinerary) {
+		function drawRouteOnMap(itinerary, origin, destination) {
+			// Nettoyer les anciennes couches
 			if (routeLayer) {
 				map.removeLayer(routeLayer);
 			}
-			showStatus('✅ Itinéraire calculé !', 'success');
+
+			// Créer un nouveau groupe de couches
+			routeLayer = L.layerGroup();
+
+			try {
+				// Obtenir les coordonnées de l'origine et de la destination
+				const originCoords = getCityCoordinates(origin);
+				const destCoords = getCityCoordinates(destination);
+
+				if (!originCoords || !destCoords) {
+					console.warn('⚠️ Coordonnées non trouvées');
+					showStatus('✅ Itinéraire calculé !', 'success');
+					return;
+				}
+
+				// Créer des positions intermédiaires en fonction des étapes
+				const positions = generateRoutePositions(originCoords, destCoords, itinerary.Steps);
+
+				// 1. Dessiner la ligne de l'itinéraire
+				const polyline = L.polyline(positions, {
+					color: '#667eea',
+					weight: 6,
+					opacity: 0.8,
+					smoothFactor: 1,
+					dashArray: '10, 5'
+				});
+				routeLayer.addLayer(polyline);
+
+				// 2. Ajouter le marqueur de départ
+				const startMarker = L.marker([originCoords.lat, originCoords.lng], {
+					icon: L.divIcon({
+						className: 'custom-marker',
+						html: '<div style="background-color: #dc3545; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4);">📍</div>',
+						iconSize: [45, 45],
+						iconAnchor: [22.5, 22.5]
+					})
+				});
+				startMarker.bindPopup(`<strong>🏁 Départ</strong><br>${origin}`);
+				routeLayer.addLayer(startMarker);
+
+				// 3. Ajouter le marqueur d'arrivée
+				const endMarker = L.marker([destCoords.lat, destCoords.lng], {
+					icon: L.divIcon({
+						className: 'custom-marker',
+						html: '<div style="background-color: #28a745; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4);">🎯</div>',
+						iconSize: [45, 45],
+						iconAnchor: [22.5, 22.5]
+					})
+				});
+				endMarker.bindPopup(`<strong>🏁 Arrivée</strong><br>${destination}`);
+				routeLayer.addLayer(endMarker);
+
+				// 4. Ajouter des marqueurs pour les stations vélo (si présentes)
+				itinerary.Steps.forEach((step, index) => {
+					if (step.Instruction.includes('station') && index > 0 && index < positions.length - 1) {
+						const pos = positions[Math.floor(positions.length * (index / itinerary.Steps.length))];
+
+						let icon = '🚲';
+						let color = '#667eea';
+
+						if (step.Instruction.includes('Prendre')) {
+							icon = '🚴';
+							color = '#28a745';
+						} else if (step.Instruction.includes('Déposer')) {
+							icon = '🅿️';
+							color = '#ffc107';
+						}
+
+						const stationMarker = L.marker(pos, {
+							icon: L.divIcon({
+								className: 'custom-marker',
+								html: `<div style="background-color: ${color}; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">${icon}</div>`,
+								iconSize: [35, 35],
+								iconAnchor: [17.5, 17.5]
+							})
+						});
+
+						stationMarker.bindPopup(`
+								<strong>${icon} ${step.Type === 'bike' ? 'Station vélo' : 'Étape'}</strong><br>
+								${step.Instruction}<br>
+								<em>Distance: ${(step.Distance / 1000).toFixed(2)} km</em>
+							`);
+
+						routeLayer.addLayer(stationMarker);
+					}
+				});
+
+				// 5. Ajouter le groupe à la carte
+				routeLayer.addTo(map);
+
+				// 6. Centrer la carte sur l'itinéraire avec animation
+				map.fitBounds(polyline.getBounds(), {
+					padding: [80, 80],
+					animate: true,
+					duration: 1
+				});
+
+				showStatus('✅ Itinéraire affiché sur la carte !', 'success');
+			} catch (error) {
+				console.error('❌ Erreur lors du dessin sur la carte:', error);
+				showStatus('✅ Itinéraire calculé (affichage carte partiel)', 'success');
+			}
+		}
+
+		// Fonction pour obtenir les coordonnées d'une ville
+		function getCityCoordinates(cityName) {
+			const normalized = cityName.trim();
+
+			// Recherche exacte
+			if (CITIES_DATABASE[normalized]) {
+				return CITIES_DATABASE[normalized];
+			}
+
+			// Recherche partielle
+			for (const [city, coords] of Object.entries(CITIES_DATABASE)) {
+				if (normalized.toLowerCase().includes(city.toLowerCase()) ||
+					city.toLowerCase().includes(normalized.toLowerCase())) {
+					return coords;
+				}
+			}
+
+			// Par défaut: milieu de la France
+			return { lat: 46.603354, lng: 1.888334 };
+		}
+
+		// Génère des positions intermédiaires pour l'itinéraire
+		function generateRoutePositions(originCoords, destCoords, steps) {
+			const positions = [];
+			const numIntermediatePoints = Math.max(steps.length, 5);
+
+			for (let i = 0; i <= numIntermediatePoints; i++) {
+				const ratio = i / numIntermediatePoints;
+
+				// Ajouter une légère courbure pour un trajet plus réaliste
+				const curveFactor = 0.1; // 10% de déviation
+				const midpointLat = (originCoords.lat + destCoords.lat) / 2;
+				const midpointLng = (originCoords.lng + destCoords.lng) / 2;
+
+				// Calcul de la position avec courbe
+				let lat = originCoords.lat + (destCoords.lat - originCoords.lat) * ratio;
+				let lng = originCoords.lng + (destCoords.lng - originCoords.lng) * ratio;
+
+				// Ajouter une courbe au milieu du trajet
+				if (ratio > 0.2 && ratio < 0.8) {
+					const curveAmount = Math.sin(ratio * Math.PI) * curveFactor;
+					const perpLat = -(destCoords.lng - originCoords.lng) * curveAmount;
+					const perpLng = (destCoords.lat - originCoords.lat) * curveAmount;
+					lat += perpLat;
+					lng += perpLng;
+				}
+
+				positions.push([lat, lng]);
+			}
+
+			return positions;
 		}
 
 		function showStatus(message, type) {
@@ -514,19 +651,7 @@
 			statusDiv.textContent = message;
 		}
 
-		function escapeXml(unsafe) {
-			return unsafe.replace(/[<>&'"]/g, (c) => {
-				switch (c) {
-					case '<': return '&lt;';
-					case '>': return '&gt;';
-					case '&': return '&amp;';
-					case '\'': return '&apos;';
-					case '"': return '&quot;';
-				}
-			});
-		}
-
-		console.log('✅ JavaScript chargé correctement');
+		console.log('✅ JavaScript chargé correctement (version REST avec carte interactive)');
 	</script>
 </body>
 </html>-->
@@ -769,6 +894,11 @@
 			::-webkit-scrollbar-thumb:hover {
 				background: #764ba2;
 			}
+
+		.custom-marker {
+			background: none;
+			border: none;
+		}
 	</style>
 </head>
 <body>
@@ -813,7 +943,6 @@
 
 	<script>
 		const CONFIG = {
-			// ✅ UTILISER L'ENDPOINT REST AU LIEU DE SOAP
 			routingServiceUrl: 'http://localhost:8004/api/itinerary',
 			stompBrokerUrl: 'ws://localhost:61614/stomp'
 		};
@@ -942,7 +1071,6 @@
 			this.disabled = true;
 
 			try {
-				// ✅ APPEL REST AU LIEU DE SOAP
 				const itinerary = await callRoutingServiceREST(origin, destination, minBikes);
 
 				if (itinerary.Instructions && itinerary.Instructions.includes('✅')) {
@@ -960,7 +1088,6 @@
 			}
 		});
 
-		// ✅ NOUVELLE FONCTION REST (PAS DE CORS)
 		async function callRoutingServiceREST(origin, destination, minBikes) {
 			const response = await fetch(CONFIG.routingServiceUrl, {
 				method: 'POST',
@@ -991,7 +1118,8 @@
 				steps.forEach((step, i) => {
 					const div = document.createElement('div');
 					div.className = 'step-item';
-					div.innerHTML = `${i + 1}. ${step.Instruction} <em>(${(step.Distance / 1000).toFixed(2)} km)</em>`;
+					const icon = step.Type === 'walk' ? '🚶' : '🚴';
+					div.innerHTML = `${i + 1}. ${icon} ${step.Instruction} <em>(${(step.Distance / 1000).toFixed(2)} km)</em>`;
 					container.appendChild(div);
 				});
 			}
@@ -999,11 +1127,151 @@
 			container.style.display = 'block';
 		}
 
+		// ✅ NOUVELLE FONCTION UTILISANT LES VRAIES COORDONNÉES GPS
 		function drawRouteOnMap(itinerary) {
+			// Nettoyer les anciennes couches
 			if (routeLayer) {
 				map.removeLayer(routeLayer);
 			}
-			showStatus('✅ Itinéraire calculé !', 'success');
+
+			routeLayer = L.layerGroup();
+
+			try {
+				console.log('📍 Itinéraire reçu:', itinerary);
+
+				if (!itinerary.Steps || itinerary.Steps.length === 0) {
+					console.warn('⚠️ Aucune étape dans l\'itinéraire');
+					showStatus('✅ Itinéraire calculé !', 'success');
+					return;
+				}
+
+				// ✅ EXTRAIRE LES POSITIONS RÉELLES DES ÉTAPES
+				const allPositions = [];
+				itinerary.Steps.forEach(step => {
+					if (step.StartPosition && step.StartPosition.lat && step.StartPosition.lng) {
+						allPositions.push([step.StartPosition.lat, step.StartPosition.lng]);
+					}
+					if (step.EndPosition && step.EndPosition.lat && step.EndPosition.lng) {
+						allPositions.push([step.EndPosition.lat, step.EndPosition.lng]);
+					}
+				});
+
+				if (allPositions.length === 0) {
+					console.warn('⚠️ Aucune position GPS trouvée');
+					showStatus('✅ Itinéraire calculé !', 'success');
+					return;
+				}
+
+				console.log(`📍 ${allPositions.length} positions GPS extraites`);
+
+				// 1. Dessiner les lignes de l'itinéraire
+				itinerary.Steps.forEach((step, index) => {
+					if (!step.StartPosition || !step.EndPosition) return;
+
+					const start = [step.StartPosition.lat, step.StartPosition.lng];
+					const end = [step.EndPosition.lat, step.EndPosition.lng];
+
+					// Ignorer les étapes sans mouvement (prendre vélo, déposer vélo)
+					if (step.Distance === 0) return;
+
+					// Couleur selon le type
+					let color = step.Type === 'walk' ? '#28a745' : '#667eea';
+					let weight = step.Type === 'walk' ? 4 : 6;
+					let dashArray = step.Type === 'walk' ? '10, 5' : null;
+
+					const polyline = L.polyline([start, end], {
+						color: color,
+						weight: weight,
+						opacity: 0.8,
+						dashArray: dashArray
+					});
+
+					polyline.bindPopup(`
+							<strong>${step.Type === 'walk' ? '🚶 À pied' : '🚴 À vélo'}</strong><br>
+							${step.Instruction}<br>
+							<em>Distance: ${(step.Distance / 1000).toFixed(2)} km</em>
+						`);
+
+					routeLayer.addLayer(polyline);
+				});
+
+				// 2. Ajouter des marqueurs aux points clés
+				const firstStep = itinerary.Steps[0];
+				const lastStep = itinerary.Steps[itinerary.Steps.length - 1];
+
+				// Marqueur de départ
+				if (firstStep.StartPosition) {
+					const startMarker = L.marker([firstStep.StartPosition.lat, firstStep.StartPosition.lng], {
+						icon: L.divIcon({
+							className: 'custom-marker',
+							html: '<div style="background-color: #dc3545; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4);">📍</div>',
+							iconSize: [45, 45],
+							iconAnchor: [22.5, 22.5]
+						})
+					});
+					startMarker.bindPopup('<strong>🏁 Départ</strong>');
+					routeLayer.addLayer(startMarker);
+				}
+
+				// Marqueur d'arrivée
+				if (lastStep.EndPosition) {
+					const endMarker = L.marker([lastStep.EndPosition.lat, lastStep.EndPosition.lng], {
+						icon: L.divIcon({
+							className: 'custom-marker',
+							html: '<div style="background-color: #28a745; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4);">🎯</div>',
+							iconSize: [45, 45],
+							iconAnchor: [22.5, 22.5]
+						})
+					});
+					endMarker.bindPopup('<strong>🏁 Arrivée</strong>');
+					routeLayer.addLayer(endMarker);
+				}
+
+				// 3. Marqueurs pour les stations vélo
+				itinerary.Steps.forEach((step, index) => {
+					if (step.Instruction.includes('Prendre un vélo') && step.StartPosition) {
+						const marker = L.marker([step.StartPosition.lat, step.StartPosition.lng], {
+							icon: L.divIcon({
+								className: 'custom-marker',
+								html: '<div style="background-color: #667eea; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; border: 3px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4);">🚲</div>',
+								iconSize: [40, 40],
+								iconAnchor: [20, 20]
+							})
+						});
+						marker.bindPopup(`<strong>🚲 Station départ</strong><br>${step.Instruction}`);
+						routeLayer.addLayer(marker);
+					}
+
+					if (step.Instruction.includes('Déposer le vélo') && step.StartPosition) {
+						const marker = L.marker([step.StartPosition.lat, step.StartPosition.lng], {
+							icon: L.divIcon({
+								className: 'custom-marker',
+								html: '<div style="background-color: #ffc107; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; border: 3px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4);">🅿️</div>',
+								iconSize: [40, 40],
+								iconAnchor: [20, 20]
+							})
+						});
+						marker.bindPopup(`<strong>🅿️ Station arrivée</strong><br>${step.Instruction}`);
+						routeLayer.addLayer(marker);
+					}
+				});
+
+				// 4. Ajouter à la carte et centrer
+				routeLayer.addTo(map);
+
+				// Calculer les bounds
+				const bounds = L.latLngBounds(allPositions);
+				map.fitBounds(bounds, {
+					padding: [80, 80],
+					animate: true,
+					duration: 1
+				});
+
+				showStatus('✅ Itinéraire réel affiché sur la carte !', 'success');
+			} catch (error) {
+				console.error('❌ Erreur affichage carte:', error);
+				showStatus('✅ Itinéraire calculé (erreur affichage)', 'info');
+			}
 		}
 
 		function showStatus(message, type) {
@@ -1012,7 +1280,7 @@
 			statusDiv.textContent = message;
 		}
 
-		console.log('✅ JavaScript chargé correctement (version REST)');
+		console.log('✅ JavaScript chargé (version avec GPS réels)');
 	</script>
 </body>
 </html>
