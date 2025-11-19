@@ -65,3 +65,17 @@ public class CatalogServer {
         }
     }
 }
+
+
+
+/*Centraliser la gestion: */
+//=======Encapsulation des appels API ======
+//regrouper toute la logique des requêtes API au même endroit, au lieu de mélanger ça avec le reste du code.
+//Pour etre plus organisé et plus facile à maintenir.
+//Ceci à travers des handlers qui s'occupent des partie de l'API (un handler = une seule partie de l'API).
+
+
+
+//======Logging pour la gestion des erreurs ======
+//Tous les handlers contient des loggings pour suivre les requêtes et les erreurs.
+//Ceci est dans les blocs catch 'e.printStackTrace()'
