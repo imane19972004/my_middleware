@@ -108,7 +108,9 @@
 //                    {
 //                        Instruction = $"Marcher jusqu'à la destination ({(route.Distance/1000):F2} km)",
 //                        Distance = route.Distance,
-//                        Type = "walk"
+//                        Type = "walk",
+//                        StartPosition = origin,
+//                        EndPosition = dest
 //                    }
 //                }
 //            };
@@ -127,7 +129,9 @@
 //            {
 //                Instruction = $"🚶 Marcher jusqu'à la station '{originStation.name}' ({walkToStation.Distance:F0}m)",
 //                Distance = walkToStation.Distance,
-//                Type = "walk"
+//                Type = "walk",
+//                StartPosition = origin,
+//                EndPosition = originStation.position
 //            });
 //            totalDistance += walkToStation.Distance;
 //            totalDuration += walkToStation.Duration;
@@ -137,7 +141,9 @@
 //            {
 //                Instruction = $"🚲 Prendre un vélo à '{originStation.name}' ({originStation.available_bikes} disponibles)",
 //                Distance = 0,
-//                Type = "bike"
+//                Type = "bike",
+//                StartPosition = originStation.position,
+//                EndPosition = originStation.position
 //            });
 
 //            // Étape 3: Faire du vélo jusqu'à la station d'arrivée
@@ -146,7 +152,9 @@
 //            {
 //                Instruction = $"🚴 Rouler jusqu'à la station '{destStation.name}' ({(bikeRoute.Distance / 1000):F2} km)",
 //                Distance = bikeRoute.Distance,
-//                Type = "bike"
+//                Type = "bike",
+//                StartPosition = originStation.position,
+//                EndPosition = destStation.position
 //            });
 //            totalDistance += bikeRoute.Distance;
 //            totalDuration += bikeRoute.Duration;
@@ -156,7 +164,9 @@
 //            {
 //                Instruction = $"🅿️ Déposer le vélo à '{destStation.name}' ({destStation.available_bike_stands} places libres)",
 //                Distance = 0,
-//                Type = "bike"
+//                Type = "bike",
+//                StartPosition = destStation.position,
+//                EndPosition = destStation.position
 //            });
 
 //            // Étape 5: Marcher jusqu'à la destination finale
@@ -165,7 +175,9 @@
 //            {
 //                Instruction = $"🚶 Marcher jusqu'à la destination ({walkFromStation.Distance:F0}m)",
 //                Distance = walkFromStation.Distance,
-//                Type = "walk"
+//                Type = "walk",
+//                StartPosition = destStation.position,
+//                EndPosition = dest
 //            });
 //            totalDistance += walkFromStation.Distance;
 //            totalDuration += walkFromStation.Duration;
@@ -193,7 +205,6 @@
 //}
 
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -212,12 +223,11 @@ namespace RoutingServer
         {
             _routeService = new OpenRouteService();
             _jcdProxy = new JCDecauxProxy();
-            Console.WriteLine("✅ RoutingService initialisé");
+            Console.WriteLine("✅ RoutingService initialisé avec OpenRouteService");
         }
 
         public async Task<ItineraryResponse> GetItinerary(ItineraryRequest request)
         {
-            // ✅ VALIDATION CRITIQUE
             if (request == null)
             {
                 Console.WriteLine("❌ REQUEST EST NULL!");
@@ -236,7 +246,7 @@ namespace RoutingServer
 
             try
             {
-                // 1️⃣ Géocoder origine et destination
+                // 1️⃣ Géocoder origine et destination (TOUJOURS via Nominatim maintenant)
                 var originPos = await _routeService.GeocodeAddress(request.Origin);
                 var destPos = await _routeService.GeocodeAddress(request.Destination);
 
@@ -304,9 +314,9 @@ namespace RoutingServer
                     {
                         Instruction = $"Marcher jusqu'à la destination ({(route.Distance/1000):F2} km)",
                         Distance = route.Distance,
+                        Duration = route.Duration,
                         Type = "walk",
-                        StartPosition = origin,
-                        EndPosition = dest
+                        Waypoints = route.Waypoints ?? new List<Position> { origin, dest }
                     }
                 }
             };
@@ -323,11 +333,11 @@ namespace RoutingServer
             var walkToStation = await _routeService.GetWalkingRoute(origin, originStation.position);
             steps.Add(new Step
             {
-                Instruction = $"🚶 Marcher jusqu'à la station '{originStation.name}' ({walkToStation.Distance:F0}m)",
+                Instruction = $"🚶 Marcher jusqu'à la station '{originStation.name}' ({(walkToStation.Distance / 1000):F2} km)",
                 Distance = walkToStation.Distance,
+                Duration = walkToStation.Duration,
                 Type = "walk",
-                StartPosition = origin,
-                EndPosition = originStation.position
+                Waypoints = walkToStation.Waypoints ?? new List<Position> { origin, originStation.position }
             });
             totalDistance += walkToStation.Distance;
             totalDuration += walkToStation.Duration;
@@ -337,10 +347,11 @@ namespace RoutingServer
             {
                 Instruction = $"🚲 Prendre un vélo à '{originStation.name}' ({originStation.available_bikes} disponibles)",
                 Distance = 0,
+                Duration = 30, // 30 secondes pour prendre le vélo
                 Type = "bike",
-                StartPosition = originStation.position,
-                EndPosition = originStation.position
+                Waypoints = new List<Position> { originStation.position }
             });
+            totalDuration += 30;
 
             // Étape 3: Faire du vélo jusqu'à la station d'arrivée
             var bikeRoute = await _routeService.GetCyclingRoute(originStation.position, destStation.position);
@@ -348,9 +359,9 @@ namespace RoutingServer
             {
                 Instruction = $"🚴 Rouler jusqu'à la station '{destStation.name}' ({(bikeRoute.Distance / 1000):F2} km)",
                 Distance = bikeRoute.Distance,
+                Duration = bikeRoute.Duration,
                 Type = "bike",
-                StartPosition = originStation.position,
-                EndPosition = destStation.position
+                Waypoints = bikeRoute.Waypoints ?? new List<Position> { originStation.position, destStation.position }
             });
             totalDistance += bikeRoute.Distance;
             totalDuration += bikeRoute.Duration;
@@ -360,20 +371,21 @@ namespace RoutingServer
             {
                 Instruction = $"🅿️ Déposer le vélo à '{destStation.name}' ({destStation.available_bike_stands} places libres)",
                 Distance = 0,
+                Duration = 30, // 30 secondes pour déposer
                 Type = "bike",
-                StartPosition = destStation.position,
-                EndPosition = destStation.position
+                Waypoints = new List<Position> { destStation.position }
             });
+            totalDuration += 30;
 
             // Étape 5: Marcher jusqu'à la destination finale
             var walkFromStation = await _routeService.GetWalkingRoute(destStation.position, dest);
             steps.Add(new Step
             {
-                Instruction = $"🚶 Marcher jusqu'à la destination ({walkFromStation.Distance:F0}m)",
+                Instruction = $"🚶 Marcher jusqu'à la destination ({(walkFromStation.Distance / 1000):F2} km)",
                 Distance = walkFromStation.Distance,
+                Duration = walkFromStation.Duration,
                 Type = "walk",
-                StartPosition = destStation.position,
-                EndPosition = dest
+                Waypoints = walkFromStation.Waypoints ?? new List<Position> { destStation.position, dest }
             });
             totalDistance += walkFromStation.Distance;
             totalDuration += walkFromStation.Duration;
