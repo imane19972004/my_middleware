@@ -265,7 +265,8 @@ namespace RoutingServer
         private readonly HttpClient _httpClient;
         private const string NOMINATIM_API = "https://nominatim.openstreetmap.org/search";
         private const string OPENROUTE_API = "https://api.openrouteservice.org/v2/directions";
-        private const string OPENROUTE_KEY = "5b3ce3597851110001cf6248a1e8e2a8d14746b39f1a8f64e5b0f6c5";
+        //private const string OPENROUTE_KEY = "5b3ce3597851110001cf6248a1e8e2a8d14746b39f1a8f64e5b0f6c5";
+        private const string OPENROUTE_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjRhYzNhMzJhYTc1ODRhNWFiOTI3MTcxNjc4NTllNDI2IiwiaCI6Im11cm11cjY0In0="; // ⚠️ Créez une nouvelle clé sur openrouteservice.org
 
         public OpenRouteService()
         {
