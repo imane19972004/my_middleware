@@ -16,3 +16,4 @@ C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\RoutingServer\obj\Debug\
 C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\RoutingServer\obj\Debug\RoutingS.054A1291.Up2Date
 C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\RoutingServer\obj\Debug\RoutingServer.exe
 C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\RoutingServer\obj\Debug\RoutingServer.pdb
+C:\Users\user\Desktop\SI4\Middleware\LetsGoBikingServer\RoutingServer\obj\Debug\RoutingServer.exe.config
